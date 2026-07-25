@@ -127,3 +127,20 @@ def equip(name, equipment, slot):
     response = requests.post(url, json=payload, headers=headers)
 
     return response.json()
+
+def sell(name, item, quantity):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/npc/sell"
+
+    payload = {
+        "code": item,
+        "quantity": quantity
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    return response.json()
