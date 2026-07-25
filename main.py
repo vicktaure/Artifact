@@ -1,6 +1,7 @@
 from character import personnage
 from api import move, get_character, fight, eat_item, rest, cook
-import time
+from helper  import execute
+from loguru import logger
 
 victor = personnage("Vicktau", 50, 0, 0)
 
@@ -11,29 +12,30 @@ print(victor.hp)
 
 while True:
     if victor.hp > 20:
-        cooldown = move(victor.name, 0, 1)
-        if cooldown:
-            time.sleep(cooldown["total_seconds"])
-
-        result = fight(victor.name)
-        print(result)
-        victor.hp = result["data"]["fight"]["characters"][0]["final_hp"]
-        time.sleep(60)
+        execute(move, victor.name, 0, 1)
+        result = execute(fight, victor.name)
+        if "data" in result:
+            fight_result = result["data"]["fight"]["result"]
+            final_hp = result["data"]["fight"]["characters"][0]["final_hp"]
+            logger.info(f"Combat: {fight_result} | HP: {final_hp}")
+            victor.hp = final_hp
     else:
+        logger.warning("HP bas !")
         data = get_character(victor.name)
         has_food = any(slot["code"] in ["raw_chicken", "cooked_chicken"] and slot["quantity"] > 0 for slot in data["inventory"])
         if has_food:
-            if cooldown:
-                time.sleep(cooldown["total_seconds"])
-                cooldown = cook(victor.name, "cooked_chicken", 1)
-            if cooldown:
-                time.sleep(cooldown["total_seconds"])
-                print(cooldown)
-                cooldown = eat_item(victor.name, "cooked_chicken", 1)
-            if cooldown:
-                    time.sleep(cooldown["total_seconds"])
+            result = execute(move, victor.name, 1, 1)
+
+            if any(slot["code"] == "raw_chicken" and slot["quantity"] > 0 for slot in data["inventory"]):
+                result = execute(cook, victor.name, "cooked_chicken", 1)
+
+            result = execute(eat_item, victor.name, "cooked_chicken", 1)
+            if "data" in result:
+                victor.hp = result["data"]["character"]["hp"]
         else:
-            rest(victor.name)
+            result = execute(rest, victor.name)
+            if "data" in result:
+                victor.hp = result["data"]["character"]["hp"]
 
     
 

@@ -29,6 +29,8 @@ def move (name, x, y):
         return cooldown
     except Exception as e:
         print(f"❌ {e}")
+        return {}
+
     
 
 def get_character(name):
@@ -95,6 +97,27 @@ def cook(name, item, quantity):
         "code": item,
         "quantity": quantity
     }
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    return response.json()
+
+def equip(name, equipment, slot):
+
+    url = f"https://api.artifactsmmo.com/my/{name}/action/equip"
+
+    payload = [
+        {
+            "code": equipment,
+            "slot": slot ,
+            "quantity": 1
+        }
+    ]
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
