@@ -1,5 +1,6 @@
 RECIPES = [
-    {"output": "apprentice_gloves", "slot": "weapon", "ingredients": {"feather": 6}},
+    {"output": "apprentice_gloves", "slot": "weapon", "ingredients": {"feather": 6}, "location": (2,1)},
+    {"output": "fried_eggs", "slot": "consumable", "ingredients": {"egg": 2},"location": (1,1)},
 ]
 
 

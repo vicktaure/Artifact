@@ -12,10 +12,6 @@ victor = personnage(data["name"], data["hp"], data["x"], data["y"])
 print(victor.hp)
 
 
-#result = execute(cook, victor.name, "apprentice_gloves", 1)
-#print(result)
-#result = execute(equip, victor.name,"apprentice_gloves", "weapon" )
-#print(result)
 
 while True:
     data = get_character(victor.name)
@@ -23,7 +19,7 @@ while True:
         recipe = can_craft(RECIPES, data["inventory"])
         print(recipe)
         if recipe:
-            execute(move, victor.name, 2, 1)
+            execute(move, victor.name, recipe["location"][0], recipe["location"][1]) 
             execute(cook, victor.name, recipe["output"], 1)
         else:
             execute(move, victor.name, 0, 1)
