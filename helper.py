@@ -27,3 +27,9 @@ def find_consumable(inventory, consumables):
             if "heal" in consumable:
                 return consumable
     return None
+
+def find_best_task_monsters(tasks):
+    for task in tasks:
+        if  task["type"] == "monsters":
+            return task
+    return None

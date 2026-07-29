@@ -144,3 +144,62 @@ def sell(name, item, quantity):
     response = requests.post(url, json=payload, headers=headers)
 
     return response.json()
+
+def accept_task(name):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/task/new"
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, headers=headers)
+
+    return response.json()
+
+def complete_task(name):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/task/complete"
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, headers=headers)
+    
+    return response.json()
+
+def cancel_task(name):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/task/cancel"
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, headers=headers)
+    
+    return response.json()
+
+def get_tasks(character_level):
+    url = "https://api.artifactsmmo.com/tasks/list"
+
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, headers=headers, params={"min_level": character_level - 2, "max_level": character_level - 1})
+
+    return response.json()
+
+def get_monster_location(monster_code):
+
+    url = "https://api.artifactsmmo.com/maps"
+
+    querystring = {"content_type":"monster", "content_code": monster_code}
+
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, headers=headers, params=querystring)
+    result = response.json()
+    print(result)
+
+    return result["data"][0]["x"], result["data"][0]["y"]
