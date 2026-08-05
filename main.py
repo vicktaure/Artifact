@@ -1,69 +1,86 @@
 from character import personnage
-from api import move, get_character, fight, eat_item, rest, cook, equip , accept_task, complete_task, cancel_task, get_tasks, get_monster_location
+from api import move, get_character, fight, eat_item, rest, cook, equip , accept_task, complete_task, cancel_task, get_tasks, get_monster_location, get_ressource_location, gathering
 from loguru import logger
 from helper import execute, can_craft, find_consumable, find_best_task_monsters
 from recipes import RECIPES
 from consumables import CONSUMABLES
+import threading
 
 victor = personnage("Vicktau", 50, 0, 0,0)
 
 data = get_character("Vicktau")
 
+data_lumberjack = get_character("strongman")
+lumberjack = personnage(data_lumberjack["name"], data_lumberjack["hp"], data_lumberjack["x"], data_lumberjack["y"], data_lumberjack["level"])
+
 victor = personnage(data["name"], data["hp"], data["x"], data["y"], data["level"])
 print(victor.hp)
 
-
-while True:
-    data = get_character(victor.name)
-
-    
-    if victor.hp > 60:
-        recipe = can_craft(RECIPES, data["inventory"],exclude_slot="consumable")
-        print(recipe)
-        if recipe:
-            execute(move, victor.name, recipe["location"][0], recipe["location"][1]) 
-            execute(cook, victor.name, recipe["output"], 1)
-        else:
-            has_task = data["task"] != ""
-            if not has_task:
-                execute(move, victor.name, 1, 2)
-                list_task = get_tasks(victor.level)
-                best_task = find_best_task_monsters(list_task["data"])
-                if best_task:
-                    execute(accept_task, victor.name)
-                    data = get_character(victor.name)
-
-            if data["task"] != "":
-                x, y = get_monster_location(data["task"])
-                execute(move, victor.name, x, y)
-            else:
-                execute(move, victor.name, 0, 1)
-
-            result = execute(fight, victor.name)
-            if "data" in result:
-                fight_result = result["data"]["fight"]["result"]
-                final_hp = result["data"]["fight"]["characters"][0]["final_hp"]
-                logger.info(f"Combat: {fight_result} | HP: {final_hp}")
-                victor.hp = final_hp
-    elif victor.hp <= 60:
+def run_victor():
+    while True:
         data = get_character(victor.name)
+
         
-        consumable_recipe = can_craft(RECIPES, data["inventory"], exclude_slot="weapon")
-        if consumable_recipe:
-            execute(move, victor.name, consumable_recipe["location"][0], consumable_recipe["location"][1])
-            execute(cook, victor.name, consumable_recipe["output"], 1)
+        if victor.hp > 60:
+            recipe = can_craft(RECIPES, data["inventory"],exclude_slot="consumable")
+            print(recipe)
+            if recipe:
+                execute(move, victor.name, recipe["location"][0], recipe["location"][1]) 
+                execute(cook, victor.name, recipe["output"], 1)
+            else:
+                has_task = data["task"] != ""
+                if not has_task:
+                    execute(move, victor.name, 1, 2)
+                    list_task = get_tasks(victor.level)
+                    best_task = find_best_task_monsters(list_task["data"])
+                    if best_task:
+                        execute(accept_task, victor.name)
+                        data = get_character(victor.name)
+
+                if data["task"] != "":
+                    x, y = get_monster_location(data["task"])
+                    execute(move, victor.name, x, y)
+                else:
+                    execute(move, victor.name, 0, 1)
+
+                result = execute(fight, victor.name)
+                if "data" in result:
+                    fight_result = result["data"]["fight"]["result"]
+                    final_hp = result["data"]["fight"]["characters"][0]["final_hp"]
+                    logger.info(f"Combat: {fight_result} | HP: {final_hp}")
+                    victor.hp = final_hp
+        elif victor.hp <= 60:
             data = get_character(victor.name)
+            
+            consumable_recipe = can_craft(RECIPES, data["inventory"], exclude_slot="weapon")
+            if consumable_recipe:
+                execute(move, victor.name, consumable_recipe["location"][0], consumable_recipe["location"][1])
+                execute(cook, victor.name, consumable_recipe["output"], 1)
+                data = get_character(victor.name)
+            
+            healing = find_consumable(data["inventory"], CONSUMABLES)
+            if healing:
+                result = execute(eat_item, victor.name, healing["code"], 1)
+                if "data" in result:
+                    victor.hp = result["data"]["character"]["hp"]
+            else:
+                result = execute(rest, victor.name)
+                if "data" in result:
+                    victor.hp = result["data"]["character"]["hp"]
+
+def run_lumberjack():
+    while True:
+        x, y = get_ressource_location("ash_tree")
+        execute(move, lumberjack.name,x,y)
+        execute(gathering,lumberjack.name)
         
-        healing = find_consumable(data["inventory"], CONSUMABLES)
-        if healing:
-            result = execute(eat_item, victor.name, healing["code"], 1)
-            if "data" in result:
-                victor.hp = result["data"]["character"]["hp"]
-        else:
-            result = execute(rest, victor.name)
-            if "data" in result:
-                victor.hp = result["data"]["character"]["hp"]
-    
+
+t1 = threading.Thread(target=run_victor, daemon=True)
+t2 = threading.Thread(target=run_lumberjack, daemon=True)
+t1.start()
+t2.start()
+t1.join()
+t2.join()
 
 
 

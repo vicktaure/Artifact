@@ -41,7 +41,10 @@ def get_character(name):
     }
     response = requests.get(url, headers=headers)
 
-    return response.json()["data"][0]
+    characters = response.json()["data"]
+    for charac in characters:
+        if charac["name"] == name:
+            return charac
 
 def fight(name):
 
@@ -195,6 +198,34 @@ def get_monster_location(monster_code):
     url = "https://api.artifactsmmo.com/maps"
 
     querystring = {"content_type":"monster", "content_code": monster_code}
+
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, headers=headers, params=querystring)
+    result = response.json()
+    print(result)
+
+    return result["data"][0]["x"], result["data"][0]["y"]
+
+def gathering(name):
+
+    url = f"https://api.artifactsmmo.com/my/{name}/action/gathering"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, headers=headers)
+
+    return response.json()
+
+def get_ressource_location(ressource_code):
+
+    url = "https://api.artifactsmmo.com/maps"
+
+    querystring = {"content_type":"resource", "content_code": ressource_code}
 
     headers = {"Accept": "application/json"}
 
