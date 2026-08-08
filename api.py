@@ -21,12 +21,9 @@ def move (name, x, y):
             
         destination = data["data"]["destination"]
         cooldown = data["data"]["cooldown"]
-
-        
-        
         print(f"✅ Moved to ({destination['x']}, {destination['y']}) on {destination['name']}")
         print(f"⏳ Cooldown started: {cooldown['total_seconds']} seconds")
-        return cooldown
+        return data
     except Exception as e:
         print(f"❌ {e}")
         return {}
@@ -203,8 +200,6 @@ def get_monster_location(monster_code):
 
     response = requests.get(url, headers=headers, params=querystring)
     result = response.json()
-    print(result)
-
     return result["data"][0]["x"], result["data"][0]["y"]
 
 def gathering(name):
@@ -231,6 +226,38 @@ def get_ressource_location(ressource_code):
 
     response = requests.get(url, headers=headers, params=querystring)
     result = response.json()
-    print(result)
-
     return result["data"][0]["x"], result["data"][0]["y"]
+
+
+def deposit(name, items):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/bank/deposit/item"
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.post(url, json=[items], headers=headers)
+    return response.json()
+
+def withdraw(name, items):
+    url = f"https://api.artifactsmmo.com/my/{name}/action/bank/withdraw/item"
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+
+    response = requests.post(url, json=items, headers=headers)
+    return response.json()
+
+def get_bank():
+    url = f"https://api.artifactsmmo.com/my/bank/items"
+    headers = {
+    "Accept": "application/json",
+    "Authorization": f"Bearer {TOKEN}"
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.json()
